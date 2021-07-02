@@ -58,7 +58,7 @@ app.post("/", upload.single("file-to-upload"), async (req, res) => {
   try {
     // Upload image to cloudinary
     const result = await cloudinary.uploader.upload(req.file.path);
-    const brandURLImage = result.secure_url;
+    const uploadedImg = result.secure_url;
     async.series([
       async function () {
         // </snippet_functiondef_begin>
@@ -84,12 +84,12 @@ app.post("/", upload.single("file-to-upload"), async (req, res) => {
         // //   process.exit(1);
         // // }
   
-        // // <snippet_describe>
-        // // Analyze URL image
-        // console.log('Analyzing URL image to describe...', describeURL.split('/').pop());
-        // const caption = (await computerVisionClient.describeImage(describeURL)).captions[0];
-        // console.log(`This may be ${caption.text} (${caption.confidence.toFixed(2)} confidence)`);
-        // // </snippet_describe>
+        // <snippet_describe>
+        // Analyze URL image
+        console.log('Analyzing URL image to describe...', uploadedImg.split('/').pop());
+        const caption = (await computerVisionClient.describeImage(uploadedImg)).captions[0];
+        console.log(`This may be ${caption.text} (${caption.confidence.toFixed(2)} confidence)`);
+        // </snippet_describe>
   
         // // Analyze local image
         // console.log('\nAnalyzing local image to describe...', path.basename(describeImagePath));
@@ -107,42 +107,7 @@ app.post("/", upload.single("file-to-upload"), async (req, res) => {
          * This example detects faces and returns its:
          *     gender, age, location of face (bounding box), confidence score, and size of face.
          */
-        console.log('-------------------------------------------------');
-        console.log('DETECT FACES');
-        console.log();
-  
-        // <snippet_faces>
-        const facesImageURL = 'https://raw.githubusercontent.com/Azure-Samples/cognitive-services-sample-data-files/master/ComputerVision/Images/faces.jpg';
-  
-        // Analyze URL image.
-        console.log('Analyzing faces in image...', facesImageURL.split('/').pop());
-        // Get the visual feature for 'Faces' only.
-        const faces = (await computerVisionClient.analyzeImage(facesImageURL, { visualFeatures: ['Faces'] })).faces;
-  
-        // Print the bounding box, gender, and age from the faces.
-        if (faces.length) {
-          console.log(`${faces.length} face${faces.length == 1 ? '' : 's'} found:`);
-          for (const face of faces) {
-            console.log(`    Gender: ${face.gender}`.padEnd(20)
-              + ` Age: ${face.age}`.padEnd(10) + `at ${formatRectFaces(face.faceRectangle)}`);
-          }
-        } else { console.log('No faces found.'); }
-        // </snippet_faces>
-  
-        // <snippet_formatfaces>
-        // Formats the bounding box
-        function formatRectFaces(rect) {
-          return `top=${rect.top}`.padEnd(10) + `left=${rect.left}`.padEnd(10) + `bottom=${rect.top + rect.height}`.padEnd(12)
-            + `right=${rect.left + rect.width}`.padEnd(10) + `(${rect.width}x${rect.height})`;
-        }
-        // </snippet_formatfaces>
-  
-        /**
-         * END - Detect Faces
-         */
-        console.log();
-  
-        /**
+        /*
          * DETECT OBJECTS
          * Detects objects in URL image:
          *     gives confidence score, shows location of object in image (bounding box), and object size. 
@@ -153,7 +118,7 @@ app.post("/", upload.single("file-to-upload"), async (req, res) => {
   
         // <snippet_objects>
         // Image of a dog
-        const objectURL = 'https://raw.githubusercontent.com/Azure-Samples/cognitive-services-node-sdk-samples/master/Data/image.jpg';
+        const objectURL = uploadedImg
   
         // Analyze a URL image
         console.log('Analyzing objects in image...', objectURL.split('/').pop());
@@ -190,7 +155,7 @@ app.post("/", upload.single("file-to-upload"), async (req, res) => {
         console.log();
   
         // Image of different kind of dog.
-        const tagsURL = 'https://moderatorsampleimages.blob.core.windows.net/samples/sample16.png';
+        const tagsURL = uploadedImg
   
         // Analyze URL image
         console.log('Analyzing tags in image...', tagsURL.split('/').pop());
@@ -218,7 +183,7 @@ app.post("/", upload.single("file-to-upload"), async (req, res) => {
         console.log();
   
         // <snippet_imagetype>
-        const typeURLImage = 'https://raw.githubusercontent.com/Azure-Samples/cognitive-services-python-sdk-samples/master/samples/vision/images/make_things_happen.jpg';
+        const typeURLImage = uploadedImg
   
         // Analyze URL image
         console.log('Analyzing type in image...', typeURLImage.split('/').pop());
@@ -247,7 +212,7 @@ app.post("/", upload.single("file-to-upload"), async (req, res) => {
         console.log();
   
         // <snippet_categories>
-        const categoryURLImage = 'https://moderatorsampleimages.blob.core.windows.net/samples/sample16.png';
+        const categoryURLImage = uploadedImg
   
         // Analyze URL image
         console.log('Analyzing category in image...', categoryURLImage.split('/').pop());
@@ -276,7 +241,7 @@ app.post("/", upload.single("file-to-upload"), async (req, res) => {
         console.log();
   
         // <snippet_brands>
-        const brandURLImage = 'https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/images/red-shirt-logo.jpg';
+        const brandURLImage = uploadedImg
   
         // Analyze URL image
         console.log('Analyzing brands in image...', brandURLImage.split('/').pop());
@@ -301,8 +266,8 @@ app.post("/", upload.single("file-to-upload"), async (req, res) => {
         console.log();
   
         // <snippet_colors>
-        const colorURLImage = 'https://raw.githubusercontent.com/Azure-Samples/cognitive-services-sample-data-files/master/ComputerVision/Images/celebrities.jpg';
-  
+        const colorURLImage = uploadedImg
+        const colorMap = { Black: "#000000", Blue: "#0000ff", Brown: "a52a2a", Gray: "808080", Green: "#00ff00", Orange: "#ffa500", Pink: "#ffc0cb", Purple: "#800080", Red: "#ff0000", Teal: "#008080", White: "#ffffff", Yellow: "#FFFF00"}
         // Analyze URL image
         console.log('Analyzing image for color scheme...', colorURLImage.split('/').pop());
         console.log();
@@ -319,110 +284,37 @@ app.post("/", upload.single("file-to-upload"), async (req, res) => {
           console.log(`Dominant background color: ${colors.dominantColorBackground}`);
           console.log(`Suggested accent color: #${colors.accentColor}`);
         }
+        //input: two colors as hex strings (without #)
+        //return: array of strings - [rgb value, hex value]
+
+        function blendHexColors(c0, c1) { //color 0(accent?), color 1
+          const a = c0.match(/.{1,2}/g)
+          const b = c1.match(/.{1,2}/g)
+          let newColor = []
+
+          a.forEach((el, i) => {
+            let rgbA = parseInt(el, 16)
+            let rgbB = parseInt(b[i], 16)
+            newColor.push(Math.round((rgbA + rgbB) / 2))
+          })
+          newColor.forEach(el => (el <= 255) ? el : 255) //max is 255
+
+          function toHex(value) {
+            return value.toString(16).padStart(2, '0')
+          }
+
+          return [`rgb(${newColor[0]}, ${newColor[1]}, ${newColor[2]})`,
+          `#${toHex(newColor[0])}${toHex(newColor[1])}${toHex(newColor[2])}`]
+        }
         // </snippet_colors_print>
         /**
          * END - Detect Color Scheme
          */
         console.log();
-  
-        /**
-         * GENERATE THUMBNAIL
-         * This example generates a thumbnail image of a specified size, from a URL and a local image.
-         */
-        console.log('-------------------------------------------------');
-        console.log('GENERATE THUMBNAIL');
-        console.log();
-        // Image of a dog.
-        const dogURL = 'https://moderatorsampleimages.blob.core.windows.net/samples/sample16.png';
-        console.log('Generating thumbnail...')
-        await computerVisionClient.generateThumbnail(100, 100, dogURL, { smartCropping: true })
-          .then((thumbResponse) => {
-            const destination = fs.createWriteStream("thumb.png")
-            thumbResponse.readableStreamBody.pipe(destination)
-            console.log('Thumbnail saved.') // Saves into root folder
-          })
-        console.log();
-        /**
-         * END - Generate Thumbnail
-         */
-  
-        /**
-        * DETECT DOMAIN-SPECIFIC CONTENT
-        * Detects landmarks or celebrities.
-        */
-        console.log('-------------------------------------------------');
-        console.log('DETECT DOMAIN-SPECIFIC CONTENT');
-        console.log();
-  
-        // <snippet_domain_image>
-        const domainURLImage = 'https://raw.githubusercontent.com/Azure-Samples/cognitive-services-sample-data-files/master/ComputerVision/Images/landmark.jpg';
-        // </snippet_domain_image>
-  
-        // <snippet_landmarks>
-        // Analyze URL image
-        console.log('Analyzing image for landmarks...', domainURLImage.split('/').pop());
-        const domain = (await computerVisionClient.analyzeImageByDomain('landmarks', domainURLImage)).result.landmarks;
-  
-        // Prints domain-specific, recognized objects
-        if (domain.length) {
-          console.log(`${domain.length} ${domain.length == 1 ? 'landmark' : 'landmarks'} found:`);
-          for (const obj of domain) {
-            console.log(`    ${obj.name}`.padEnd(20) + `(${obj.confidence.toFixed(2)} confidence)`.padEnd(20) + `${formatRectDomain(obj.faceRectangle)}`);
-          }
-        } else {
-          console.log('No landmarks found.');
-        }
-        // </snippet_landmarks>
-  
-        // <snippet_landmarks_rect>
-        // Formats bounding box
-        function formatRectDomain(rect) {
-          if (!rect) return '';
-          return `top=${rect.top}`.padEnd(10) + `left=${rect.left}`.padEnd(10) + `bottom=${rect.top + rect.height}`.padEnd(12) +
-            `right=${rect.left + rect.width}`.padEnd(10) + `(${rect.width}x${rect.height})`;
-        }
-        // </snippet_landmarks_rect>
-  
-        console.log();
-  
-        /**
-        * DETECT ADULT CONTENT
-        * Detects "adult" or "racy" content that may be found in images. 
-        * The score closer to 1.0 indicates racy/adult content.
-        * Detection for both local and URL images.
-        */
-        console.log('-------------------------------------------------');
-        console.log('DETECT ADULT CONTENT');
-        console.log();
-  
-        // <snippet_adult_image>
-        // The URL image and local images are not racy/adult. 
-        // Try your own racy/adult images for a more effective result.
-        const adultURLImage = 'https://raw.githubusercontent.com/Azure-Samples/cognitive-services-sample-data-files/master/ComputerVision/Images/celebrities.jpg';
-        // </snippet_adult_image>
-  
-        // <snippet_adult>
-        // Function to confirm racy or not
-        const isIt = flag => flag ? 'is' : "isn't";
-  
-        // Analyze URL image
-        console.log('Analyzing image for racy/adult content...', adultURLImage.split('/').pop());
-        const adult = (await computerVisionClient.analyzeImage(adultURLImage, {
-          visualFeatures: ['Adult']
-        })).adult;
-        console.log(`This probably ${isIt(adult.isAdultContent)} adult content (${adult.adultScore.toFixed(4)} score)`);
-        console.log(`This probably ${isIt(adult.isRacyContent)} racy content (${adult.racyScore.toFixed(4)} score)`);
-        // </snippet_adult>
-        console.log();
-        /**
-        * END - Detect Adult Content
-        */
-  
-        console.log();
         console.log('-------------------------------------------------');
         console.log('End of quickstart.');
         // <snippet_functiondef_end>
-  
+        res.render("result.ejs", { caption: caption.text, img: uploadedImg, clrs: [[color.accentColor], color.dominantColors.join(', '), color.dominantColorBackground, color.dominantColorForeground] });
       },
       function () {
         return new Promise((resolve) => {
@@ -432,7 +324,6 @@ app.post("/", upload.single("file-to-upload"), async (req, res) => {
     ], (err) => {
       throw (err);
     });
-    res.render("result.ejs", { brands: brands, img: brandURLImage });
   } catch (err) {
     console.log(err);
   }
